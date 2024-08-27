@@ -37,11 +37,10 @@ def forge():
     ]
 
     user = User(name=user)
-    db.session.add(user)
     for m in movies:
-        movie = Movie(title=m['title'], year=m['year'])
-        db.session.add(movie)
+        user.movies.append(Movie(title=m['title'], year=m['year'], user_id=user.id))
     else:
+        db.session.add(user)
         db.session.commit()
     click.echo('Done.')
 
@@ -55,15 +54,17 @@ def initdb(drop):
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(20))
+    name = db.Column(db.String(20), nullable=False)
+    movies = db.relationship('Movie', lazy=True, backref='user')
 
 class Movie(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(60))
+    title = db.Column(db.String(60), nullable=False)
     year = db.Column(db.String(4))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 @app.route('/')
 def index():
     user = User.query.first()
-    movies = Movie.query.all()
+    movies = Movie.query.filter_by(user_id=user.id).all()
     return render_template('index.html', user=user, movies=movies)
