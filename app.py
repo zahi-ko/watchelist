@@ -9,6 +9,8 @@ from flask_login import LoginManager, UserMixin, current_user, login_user, logou
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
+DEBUG = False
+
 ISWIN = sys.platform.startswith('win')
 if ISWIN:
     prefix = 'sqlite:///'
@@ -17,7 +19,10 @@ else:
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'dev'
-app.config['SQLALCHEMY_DATABASE_URI'] = prefix + os.path.join(app.root_path, 'data.db')
+if DEBUG:
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = prefix + os.path.join(app.root_path, 'data.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)

@@ -5,25 +5,24 @@ from app import app, db, User, Movie, forge, initdb
 
 class AppTestCase(unittest.TestCase):
     def setUp(self) -> None:
-
-        self.context = app.app_context()
+        self.context = app.test_request_context()
         self.context.push()
         self.client = app.test_client()
         self.runner = app.test_cli_runner()
-
+    
         app.config.update(
             TESTING=True,
-            SQLALCHEMY_DATABASE_URI='sqlite:///:memory:'
+            SQLALCHEMY_DATABASE_URI='sqlite:///:memory:'  # Use a separate test database
         )
         db.create_all()
-
+    
         user = User(name='test')
         user.set_password('123')
         db.session.add(user)
         db.session.commit()
-
+    
         movie = Movie(title='test movie', year='2024', user_id=user.id)
-
+    
         db.session.add(movie)
         db.session.commit()
     
